@@ -1,0 +1,53 @@
+<!-- <mat-card *ngFor="let sd of stylingsheet_definitions">
+    <mat-card-content> {{ sd.name }}</mat-card-content>
+</mat-card> -->
+<mat-card>
+    <mat-radio-group
+        (change)="bodyTypeChange($event)"
+        name="body_type"
+        aria-label="Select a body type"
+    >
+        <mat-radio-button value="Male">Male</mat-radio-button>
+        <mat-radio-button value="Female">Female</mat-radio-button>
+        <mat-radio-button value="Teen">Teen</mat-radio-button>
+        <mat-radio-button value="Child">Child</mat-radio-button>
+        <mat-radio-button value="Pregnant">Pregnant</mat-radio-button>
+        <mat-radio-button value="Muscular">Muscular</mat-radio-button>
+    </mat-radio-group>
+</mat-card>
+
+<mat-card>
+    <input
+        type="text"
+        [ngModel]="filterValue"
+        (ngModelChange)="filtersheets($event)"
+    />
+
+    <button (click)="clearCharacter()">Clear Character</button>
+</mat-card>
+
+<div *ngFor="let sheet of filteredSheets.slice(0, 8)">
+    <mat-expansion-panel>
+        <mat-expansion-panel-header>
+            <mat-panel-title>
+                {{ sheet.name }}
+            </mat-panel-title>
+            <mat-panel-description>
+                Type: {{ sheet.type_name }}
+            </mat-panel-description>
+        </mat-expansion-panel-header>
+
+        <mat-card *ngFor="let variant of sheet.variants" [ngClass]="variant">
+            <mat-card-content>
+                {{ variant }}
+            </mat-card-content>
+            <button
+                mat-raised-button
+                color="primary"
+                (click)="addSheetDefinition(sheet, variant)"
+            >
+                Add to Character
+            </button>
+        </mat-card>
+    </mat-expansion-panel>
+</div>

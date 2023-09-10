@@ -1,0 +1,82 @@
+$colors: (
+    "light": #f1f1f1,
+    "amber": #ffc107,
+    "olive": #808000,
+    "taupe": #483c32,
+    "bronze": #cd7f32,
+    "brown": #964b00,
+    "black": #000000,
+    "lavender": #e6e6fa,
+    "blue": #0000ff,
+    "zombie_green": #6b8e23,
+    "green": #008000,
+    "pale_green": #98fb98,
+    "bright_green": #00ff00,
+    "dark_green": #006400,
+    "fur_black": #1a1a1a,
+    "fur_brown": #8b4513,
+    "fur_tan": #d2b48c,
+    "fur_copper": #b87333,
+    "fur_gold": #ffd700,
+    "fur_grey": #808080,
+    "fur_white": #ffffff,
+    "skeleton": #c0c0c0,
+    "bauldric": #800000,
+    "magician": #ff00ff,
+    "steel": #808080,
+    "silver": #c0c0c0,
+    "gold": #ffd700,
+    "platinum": #e5e4e2,
+    "brass": #b5a642,
+    "blood": #800000,
+    "blonde": #faf0be,
+    "blonde2": #e6c200,
+    "ceramic": #f5f5f5,
+    "charcoal": #36454f,
+    "leather": #a0522d,
+    "red": #ff0000,
+    "slate": #708090,
+    "tan": #d2b48c,
+    "walnut": #5d432c,
+    "white": #ffffff,
+    "crossbow": #8b4513,
+    "longsword": #424242,
+    "ash": #b2beb5,
+    "sandy": #f4a460,
+    "strawberry": #ff4040,
+    "redhead": #ff4040,
+    "ginger": #ff4040,
+    "carrot": #ff4040,
+    "raven": #000000,
+
+    // Add more color names and values here
+);
+
+@each $color-name, $color-value in $colors {
+    .#{$color-name} {
+        background-color: $color-value;
+    }
+}
+
+// Define basic styling for the body and container
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh; // Make the body fill the viewport height
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    display: flex;
+    flex-direction: column; // Stack the boxes vertically
+    height: 100%; // Make the container fill the body's height
+
+    // Style the two boxes
+    .box {
+        flex: 1; // Distribute available space evenly
+        width: 100%; // Take up 50% of the container's width
+        box-sizing: border-box;
+    }
+}

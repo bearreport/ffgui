@@ -1,0 +1,6 @@
+{
+    "/unity": {
+        "target": "https://localhost:5258",
+        "secure": false
+    }
+}
