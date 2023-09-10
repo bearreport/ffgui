@@ -27,9 +27,7 @@ export class CharacterCustomizerComponent {
 
     body_type = "male";
     body_types = [];
-    currentCharacter: iCharacter;
-
-    masterKeys: string[] = ["default"];
+    currentCharacter: iCharacter | null;
 
     sheetDefinitionObserver = {
         next: (data) => {
@@ -44,16 +42,26 @@ export class CharacterCustomizerComponent {
     //sync functions
 
     addSheetDefinition(sheet: iSheetDefinition, variant: string) {
-        const sheetCopy = JSON.parse(JSON.stringify(sheet));
+        const sheetCopy: iSheetDefinition = JSON.parse(JSON.stringify(sheet));
         sheetCopy.variants = [variant];
+        const body_type = this.body_type;
+
+        if (this.characterProxyService.sharedCharacter$ != undefined) {
+            this.currentSd.forEach((sd, index) => {
+                if (sd.type_name == sheetCopy.type_name) {
+                    this.currentSd.splice(index, 1);
+                }
+            });
+        }
         this.currentSd.push(sheetCopy);
         const sheets = this.currentSd;
-        const body_type = this.body_type;
+
         const character: iCharacter = {
             sheetDefinitions: sheets,
             bodyType: body_type,
         };
         this.characterProxyService.updateCharacter(character);
+
         this.available_sheet_definitions =
             this.available_sheet_definitions.filter((x) =>
                 x.layer_1[this.body_type] !== null &&
@@ -61,7 +69,7 @@ export class CharacterCustomizerComponent {
                     ? this.available_sheet_definitions.filter(
                           (x) => x.layer_1[this.body_type]
                       )
-                    : console.log("BAD SD")
+                    : null
             );
     }
 
@@ -73,27 +81,33 @@ export class CharacterCustomizerComponent {
     clearCharacter() {
         this.currentSd = [] as iSheetDefinition[];
         this.available_sheet_definitions = this.sheet_definitions;
+        this.filteredSheets = [];
         this.characterProxyService.clearCharacter();
     }
 
-    filtersheets(text: string): iSheetDefinition[] {
+    filtersheets(searchTerm: string): iSheetDefinition[] {
         this.getAllVariants();
         const sheets = this.available_sheet_definitions;
+
         this.filteredSheets = sheets.filter(
             (x) =>
-                x.name.toLowerCase().includes(text.toLowerCase().trim()) ||
-                x.type_name.toLowerCase().includes(text.toLowerCase().trim()) ||
-                x.filename.toLowerCase().includes(text.toLowerCase().trim())
+                x.name
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase().trim()) ||
+                x.type_name
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase().trim()) ||
+                x.filename
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase().trim())
         );
+        if (
+            this.filteredSheets.length === this.sheet_definitions.length ||
+            searchTerm === ""
+        ) {
+            this.filteredSheets = [];
+        }
         return this.filteredSheets;
-    }
-
-    generateMasterKeyList() {
-        let keys: string[] = ["initializer"];
-        this.sheet_definitions.forEach((sd) =>
-            !keys.includes(sd.type_name) ? keys.push(sd.type_name) : null
-        );
-        this.masterKeys = keys;
     }
 
     getAllVariants() {
@@ -151,6 +165,12 @@ export class CharacterCustomizerComponent {
                 })
             )
             .subscribe(this.sheetDefinitionObserver);
+
+        this.characterProxyService.sharedCharacter$.subscribe((character) => {
+            if (character !== null) {
+                this.currentCharacter = character;
+            }
+        });
 
         this.unityService.getTestMessage().subscribe((data) => {
             console.log(data);

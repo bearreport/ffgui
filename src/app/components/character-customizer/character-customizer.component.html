@@ -22,7 +22,7 @@
 </mat-card>
 
 <div *ngFor="let sheet of filteredSheets.slice(0, 8)">
-    <mat-expansion-panel>
+    <mat-expansion-panel #mep="matExpansionPanel">
         <mat-expansion-panel-header>
             <mat-panel-title>
                 {{ sheet.name }}
@@ -39,7 +39,9 @@
             <button
                 mat-raised-button
                 color="primary"
-                (click)="addSheetDefinition(sheet, variant)"
+                (click)="
+                    addSheetDefinition(sheet, variant); mep.expanded = false
+                "
             >
                 Add to Character
             </button>

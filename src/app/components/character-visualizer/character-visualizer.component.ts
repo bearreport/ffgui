@@ -36,17 +36,36 @@ export class CharacterVisualizerComponent implements OnInit {
         const character = this.currentCharacter.sheetDefinitions.sort((a, b) =>
             a.layer_1.zPos > b.layer_1.zPos ? 1 : -1
         );
+
+        // Define an array of layer names
+        const layerNames = [
+            "layer_1",
+            "layer_2",
+            "layer_3",
+            "layer_4",
+            "layer_5",
+            "layer_6",
+            "layer_7",
+            "layer_8",
+        ];
+
         const layers = await Promise.all(
             character.map(async (sheet: iSheetDefinition) => {
-                const layer = sheet.layer_1;
                 let prefix = "";
-                if (layer[body_type.toString()]) {
-                    prefix = "/" + layer[body_type.toString()] + "/";
+
+                // Iterate through layer names
+                for (const layerName of layerNames) {
+                    const layer = sheet[layerName];
+
+                    if (layer && layer[body_type]) {
+                        prefix = "/" + layer[body_type] + "/";
+                        break; // Exit the loop when a valid prefix is found
+                    }
                 }
 
                 if (prefix !== "") {
                     const url = `http://localhost:3000/static/spritesheets/${
-                        prefix + sheet.variants[0] + ".png"
+                        prefix + sheet.variants[0].replace(" ", "_") + ".png"
                     }`;
 
                     const img = new Image();
