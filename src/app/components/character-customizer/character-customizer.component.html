@@ -1,18 +1,13 @@
-<!-- <mat-card *ngFor="let sd of stylingsheet_definitions">
-    <mat-card-content> {{ sd.name }}</mat-card-content>
-</mat-card> -->
 <mat-card>
     <mat-radio-group
         (change)="bodyTypeChange($event)"
+        [(ngModel)]="body_type"
         name="body_type"
         aria-label="Select a body type"
     >
-        <mat-radio-button value="Male">Male</mat-radio-button>
-        <mat-radio-button value="Female">Female</mat-radio-button>
-        <mat-radio-button value="Teen">Teen</mat-radio-button>
-        <mat-radio-button value="Child">Child</mat-radio-button>
-        <mat-radio-button value="Pregnant">Pregnant</mat-radio-button>
-        <mat-radio-button value="Muscular">Muscular</mat-radio-button>
+        <mat-radio-button *ngFor="let body of body_types" [value]="body">{{
+            body
+        }}</mat-radio-button>
     </mat-radio-group>
 </mat-card>
 

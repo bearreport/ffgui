@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Output } from "@angular/core";
-import { Subscription } from "rxjs";
+import { Subscription, finalize } from "rxjs";
 
 import { iCharacter } from "src/app/classes/icharacter";
 import { iSheetDefinition } from "src/app/classes/isheetdefinition";
@@ -19,12 +19,14 @@ import { UnityService } from "src/app/services/unity.service";
 export class CharacterCustomizerComponent {
     sheetDefinitionSubscription?: Subscription;
     sheet_definitions = [];
+    available_sheet_definitions = [];
     selectedSheet: iSheetDefinition;
     currentSd: iSheetDefinition[] = [];
     filteredSheets: iSheetDefinition[] = [];
     filterValue = "";
 
-    body_type = "Male";
+    body_type = "male";
+    body_types = [];
     currentCharacter: iCharacter;
 
     masterKeys: string[] = ["default"];
@@ -34,8 +36,12 @@ export class CharacterCustomizerComponent {
             return (this.sheet_definitions = data);
         },
         error: (err: any) => console.error(err),
-        complete: () => {},
+        complete: () => {
+            return this.sheet_definitions;
+        },
     };
+
+    //sync functions
 
     addSheetDefinition(sheet: iSheetDefinition, variant: string) {
         const sheetCopy = JSON.parse(JSON.stringify(sheet));
@@ -47,24 +53,32 @@ export class CharacterCustomizerComponent {
             sheetDefinitions: sheets,
             bodyType: body_type,
         };
-        console.log(character);
         this.characterProxyService.updateCharacter(character);
+        this.available_sheet_definitions =
+            this.available_sheet_definitions.filter((x) =>
+                x.layer_1[this.body_type] !== null &&
+                x.layer_1[this.body_type] !== undefined
+                    ? this.available_sheet_definitions.filter(
+                          (x) => x.layer_1[this.body_type]
+                      )
+                    : console.log("BAD SD")
+            );
     }
 
     bodyTypeChange(event: any) {
         this.body_type = event.value;
+        this.clearCharacter();
     }
 
     clearCharacter() {
         this.currentSd = [] as iSheetDefinition[];
+        this.available_sheet_definitions = this.sheet_definitions;
         this.characterProxyService.clearCharacter();
     }
 
     filtersheets(text: string): iSheetDefinition[] {
         this.getAllVariants();
-        const sheets = this.sheetDefinitionObserver.next(
-            this.sheet_definitions
-        );
+        const sheets = this.available_sheet_definitions;
         this.filteredSheets = sheets.filter(
             (x) =>
                 x.name.toLowerCase().includes(text.toLowerCase()) ||
@@ -112,16 +126,35 @@ export class CharacterCustomizerComponent {
         return grouped;
     }
 
+    getBodyTypes() {
+        const sheets = this.sheet_definitions;
+        const layer1 = sheets.map((x) => x.layer_1);
+        const keys = [];
+        layer1.forEach((x) => {
+            keys.push(Object.keys(x));
+        });
+        this.body_types = [...new Set(keys.flat())].splice(2);
+    }
+
+    //async functions
+
+    //ng lifecycle hooks
+
     ngOnInit(): void {
         this.sheetDefinitionSubscription = this.characterCustomizerService
             .getSheetDefinitions()
+            .pipe(
+                finalize(() => {
+                    this.getBodyTypes();
+                    this.available_sheet_definitions = this.sheet_definitions;
+                })
+            )
             .subscribe(this.sheetDefinitionObserver);
+
         this.unityService.getTestMessage().subscribe((data) => {
             console.log(data);
         });
     }
-
-    ngAfterViewInit() {}
 
     constructor(
         private characterCustomizerService: CharacterCustomizerService,

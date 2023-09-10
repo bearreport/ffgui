@@ -2,6 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { iCharacter } from "src/app/classes/icharacter";
 import { CharacterProxyService } from "src/app/services/character-proxy-service";
 import { Renderer2, ViewChild, ElementRef } from "@angular/core";
+import { iSheetDefinition, Layer } from "src/app/classes/isheetdefinition";
 
 @Component({
     selector: "app-character-visualizer",
@@ -14,6 +15,7 @@ export class CharacterVisualizerComponent implements OnInit {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
 
+    //sync functions
     clearCanvas() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
@@ -27,39 +29,40 @@ export class CharacterVisualizerComponent implements OnInit {
         this.container.nativeElement.appendChild(this.canvas);
     }
 
+    //async functions
     async buildCharacter() {
         this.clearCanvas();
-        console.log(this.currentCharacter.sheetDefinitions);
+        const body_type = this.currentCharacter.bodyType;
         const layers = await Promise.all(
-            this.currentCharacter.sheetDefinitions.map(async (sheet) => {
-                console.log(sheet);
-                const prefix = sheet.layer_1.male;
+            this.currentCharacter.sheetDefinitions.map(
+                async (sheet: iSheetDefinition) => {
+                    const layer: Layer = sheet.layer_1;
+                    let prefix = "";
+                    if (layer[body_type.toString()]) {
+                        prefix = "/" + layer[body_type.toString()] + "/";
+                    }
 
-                if (prefix === undefined) {
-                    console.error(
-                        "Prefix is undefined. Check your data structure."
-                    );
-                    return null; // Skip this image and continue with the next one
+                    if (prefix !== "") {
+                        const url = `http://localhost:3000/static/spritesheets/${
+                            prefix + sheet.variants[0] + ".png"
+                        }`;
+
+                        const img = new Image();
+
+                        img.src = url;
+
+                        await new Promise((res) => {
+                            img.onload = () => res("loaded");
+                        });
+
+                        return img;
+                    } else {
+                        return new Image();
+                    }
                 }
-
-                const url = `http://localhost:3000/static/spritesheets/${
-                    prefix + sheet.variants[0] + ".png"
-                }`;
-                console.log("URL:", url);
-
-                const img = new Image();
-
-                img.src = url;
-
-                await new Promise((res) => {
-                    img.onload = () => res("loaded");
-                });
-
-                return img;
-            })
+            )
         );
 
-        // Filter out any null values that were skipped due to undefined prefix
         const validLayers = layers.filter((layer) => layer !== null);
 
         validLayers.forEach((layer) => {
@@ -75,6 +78,8 @@ export class CharacterVisualizerComponent implements OnInit {
             if (character !== null) {
                 this.currentCharacter = character;
                 this.buildCharacter();
+            } else {
+                this.clearCanvas();
             }
         });
     }

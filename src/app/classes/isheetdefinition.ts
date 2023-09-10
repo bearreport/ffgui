@@ -4,11 +4,11 @@ export interface iSheetDefinition {
     layer_1: Layer;
     layer_2?: Layer;
     layer_3?: Layer;
-    Layer_4?: Layer;
-    Layer_5?: Layer;
-    Layer_6?: Layer;
-    Layer_7?: Layer;
-    Layer_8?: Layer;
+    layer_4?: Layer;
+    layer_5?: Layer;
+    layer_6?: Layer;
+    layer_7?: Layer;
+    layer_8?: Layer;
     variants?: string[];
     match_body_color?: boolean;
     filename?: string;
