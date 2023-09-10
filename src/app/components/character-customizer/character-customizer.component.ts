@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Output } from "@angular/core";
 import { Subscription } from "rxjs";
+
 import { iCharacter } from "src/app/classes/icharacter";
 import { iSheetDefinition } from "src/app/classes/isheetdefinition";
 
@@ -16,19 +17,27 @@ import { UnityService } from "src/app/services/unity.service";
     ],
 })
 export class CharacterCustomizerComponent {
-    sheet_definitions = [];
     sheetDefinitionSubscription?: Subscription;
+    sheet_definitions = [];
     selectedSheet: iSheetDefinition;
-    masterKeys: string[] = ["default"];
-    body_type = "Male";
-    keys: string[] = ["default"];
+    currentSd: iSheetDefinition[] = [];
     filteredSheets: iSheetDefinition[] = [];
     filterValue = "";
+
+    body_type = "Male";
     currentCharacter: iCharacter;
-    currentSd: iSheetDefinition[] = [];
+
+    masterKeys: string[] = ["default"];
+
+    sheetDefinitionObserver = {
+        next: (data) => {
+            return (this.sheet_definitions = data);
+        },
+        error: (err: any) => console.error(err),
+        complete: () => {},
+    };
 
     addSheetDefinition(sheet: iSheetDefinition, variant: string) {
-        console.log(sheet, variant);
         const sheetCopy = JSON.parse(JSON.stringify(sheet));
         sheetCopy.variants = [variant];
         this.currentSd.push(sheetCopy);
@@ -51,29 +60,17 @@ export class CharacterCustomizerComponent {
         this.characterProxyService.clearCharacter();
     }
 
-    sheetDefinitionObserver = {
-        next: (data: any) => {
-            this.sheet_definitions = data;
-        },
-        error: (err: any) => console.error(err),
-        complete: () => {},
-        getSheets: () => {
-            return this.sheet_definitions;
-        },
-    };
-
-    getUniqueKeys(obj: {}) {
-        const uniqueKeys: string[] = [...new Set(Object.keys(obj))].filter(
-            (x) => x !== ""
+    filtersheets(text: string): iSheetDefinition[] {
+        this.getAllVariants();
+        const sheets = this.sheetDefinitionObserver.next(
+            this.sheet_definitions
         );
-        return uniqueKeys;
-    }
-
-    getAllVariants() {
-        const sheets = this.sheetDefinitionObserver.getSheets();
-        const variants = sheets.map((sheet) => sheet.variants);
-        const flattened = variants.flat();
-        const uniqueVariants = [...new Set(flattened)];
+        this.filteredSheets = sheets.filter(
+            (x) =>
+                x.name.toLowerCase().includes(text.toLowerCase()) ||
+                x.type_name.toLowerCase().includes(text.toLowerCase())
+        );
+        return this.filteredSheets;
     }
 
     generateMasterKeyList() {
@@ -82,6 +79,22 @@ export class CharacterCustomizerComponent {
             !keys.includes(sd.type_name) ? keys.push(sd.type_name) : null
         );
         this.masterKeys = keys;
+    }
+
+    getAllVariants() {
+        const sheets = this.sheetDefinitionObserver.next(
+            this.sheet_definitions
+        );
+        const variants = sheets.map((sheet) => sheet.variants);
+        const flattened = variants.flat();
+        const uniqueVariants = [...new Set(flattened)];
+    }
+
+    getUniqueKeys(obj: {}) {
+        const uniqueKeys: string[] = [...new Set(Object.keys(obj))].filter(
+            (x) => x !== ""
+        );
+        return uniqueKeys;
     }
 
     groupData(sd: iSheetDefinition[]): iSheetDefinition[] {
@@ -97,17 +110,6 @@ export class CharacterCustomizerComponent {
             grouped[type_name].push(sd);
         });
         return grouped;
-    }
-
-    filtersheets(text: string): iSheetDefinition[] {
-        this.getAllVariants();
-        const sheets = this.sheetDefinitionObserver.getSheets();
-        this.filteredSheets = sheets.filter(
-            (x) =>
-                x.name.toLowerCase().includes(text.toLowerCase()) ||
-                x.type_name.toLowerCase().includes(text.toLowerCase())
-        );
-        return this.filteredSheets;
     }
 
     ngOnInit(): void {

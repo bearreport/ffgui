@@ -14,21 +14,8 @@ export class CharacterVisualizerComponent implements OnInit {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
 
-    constructor(
-        private characterProxyService: CharacterProxyService,
-        private renderer: Renderer2
-    ) {}
-
-    ngOnInit(): void {
-        this.createCanvas();
-        this.ctx = this.canvas.getContext("2d");
-
-        this.characterProxyService.sharedCharacter$.subscribe((character) => {
-            if (character !== null) {
-                this.currentCharacter = character;
-                this.buildCharacter();
-            }
-        });
+    clearCanvas() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     createCanvas() {
@@ -38,10 +25,6 @@ export class CharacterVisualizerComponent implements OnInit {
         this.canvas.height = 1344;
 
         this.container.nativeElement.appendChild(this.canvas);
-    }
-
-    clearCanvas() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     async buildCharacter() {
@@ -83,4 +66,21 @@ export class CharacterVisualizerComponent implements OnInit {
             this.ctx.drawImage(layer, 0, 0);
         });
     }
+
+    ngOnInit(): void {
+        this.createCanvas();
+        this.ctx = this.canvas.getContext("2d");
+
+        this.characterProxyService.sharedCharacter$.subscribe((character) => {
+            if (character !== null) {
+                this.currentCharacter = character;
+                this.buildCharacter();
+            }
+        });
+    }
+
+    constructor(
+        private characterProxyService: CharacterProxyService,
+        private renderer: Renderer2
+    ) {}
 }
