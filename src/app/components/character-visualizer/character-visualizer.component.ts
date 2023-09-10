@@ -33,34 +33,35 @@ export class CharacterVisualizerComponent implements OnInit {
     async buildCharacter() {
         this.clearCanvas();
         const body_type = this.currentCharacter.bodyType;
+        const character = this.currentCharacter.sheetDefinitions.sort((a, b) =>
+            a.layer_1.zPos > b.layer_1.zPos ? 1 : -1
+        );
         const layers = await Promise.all(
-            this.currentCharacter.sheetDefinitions.map(
-                async (sheet: iSheetDefinition) => {
-                    const layer: Layer = sheet.layer_1;
-                    let prefix = "";
-                    if (layer[body_type.toString()]) {
-                        prefix = "/" + layer[body_type.toString()] + "/";
-                    }
-
-                    if (prefix !== "") {
-                        const url = `http://localhost:3000/static/spritesheets/${
-                            prefix + sheet.variants[0] + ".png"
-                        }`;
-
-                        const img = new Image();
-
-                        img.src = url;
-
-                        await new Promise((res) => {
-                            img.onload = () => res("loaded");
-                        });
-
-                        return img;
-                    } else {
-                        return new Image();
-                    }
+            character.map(async (sheet: iSheetDefinition) => {
+                const layer = sheet.layer_1;
+                let prefix = "";
+                if (layer[body_type.toString()]) {
+                    prefix = "/" + layer[body_type.toString()] + "/";
                 }
-            )
+
+                if (prefix !== "") {
+                    const url = `http://localhost:3000/static/spritesheets/${
+                        prefix + sheet.variants[0] + ".png"
+                    }`;
+
+                    const img = new Image();
+
+                    img.src = url;
+
+                    await new Promise((res) => {
+                        img.onload = () => res("loaded");
+                    });
+
+                    return img;
+                } else {
+                    return new Image();
+                }
+            })
         );
 
         const validLayers = layers.filter((layer) => layer !== null);

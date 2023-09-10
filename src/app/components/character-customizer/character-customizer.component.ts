@@ -81,8 +81,9 @@ export class CharacterCustomizerComponent {
         const sheets = this.available_sheet_definitions;
         this.filteredSheets = sheets.filter(
             (x) =>
-                x.name.toLowerCase().includes(text.toLowerCase()) ||
-                x.type_name.toLowerCase().includes(text.toLowerCase())
+                x.name.toLowerCase().includes(text.toLowerCase().trim()) ||
+                x.type_name.toLowerCase().includes(text.toLowerCase().trim()) ||
+                x.filename.toLowerCase().includes(text.toLowerCase().trim())
         );
         return this.filteredSheets;
     }
