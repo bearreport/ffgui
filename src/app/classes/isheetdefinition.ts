@@ -12,6 +12,7 @@ export interface iSheetDefinition {
     variants?: string[];
     match_body_color?: boolean;
     filename?: string;
+    filepath?: string;
 }
 
 export interface Layer {

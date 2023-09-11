@@ -54,8 +54,8 @@ export class CharacterCustomizerComponent {
             });
         }
         this.currentSd.push(sheetCopy);
-        const sheets = this.currentSd;
 
+        const sheets = this.currentSd;
         const character: iCharacter = {
             sheetDefinitions: sheets,
             bodyType: body_type,
@@ -86,7 +86,6 @@ export class CharacterCustomizerComponent {
     }
 
     filtersheets(searchTerm: string): iSheetDefinition[] {
-        this.getAllVariants();
         const sheets = this.available_sheet_definitions;
 
         this.filteredSheets = sheets.filter(
@@ -108,15 +107,6 @@ export class CharacterCustomizerComponent {
             this.filteredSheets = [];
         }
         return this.filteredSheets;
-    }
-
-    getAllVariants() {
-        const sheets = this.sheetDefinitionObserver.next(
-            this.sheet_definitions
-        );
-        const variants = sheets.map((sheet) => sheet.variants);
-        const flattened = variants.flat();
-        const uniqueVariants = [...new Set(flattened)];
     }
 
     getUniqueKeys(obj: {}) {
