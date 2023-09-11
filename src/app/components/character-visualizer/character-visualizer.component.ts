@@ -11,21 +11,37 @@ import { iSheetDefinition, Layer } from "src/app/classes/isheetdefinition";
 })
 export class CharacterVisualizerComponent implements OnInit {
     @ViewChild("container", { static: true }) container: ElementRef;
-    currentCharacter: iCharacter | null;
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
+    tileSize: number = 64;
+    canvasWidth: number = 832;
+    canvasHeight: number = 1344;
+    composedImage;
+    tiles = [];
+
+    currentCharacter: iCharacter;
 
     //sync functions
     clearCanvas() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-    createCanvas() {
+    createCanvas(customparams?: {
+        width: number;
+        height: number;
+        tilesize: number;
+    }) {
         this.canvas = this.renderer.createElement("canvas");
         this.canvas.id = "canvas";
-        this.canvas.width = 832;
-        this.canvas.height = 1344;
-
+        customparams
+            ? (this.canvas.width = customparams.width)
+            : (this.canvas.width = this.canvasWidth);
+        customparams
+            ? (this.canvas.height = customparams.height)
+            : (this.canvas.height = this.canvasHeight);
+        customparams
+            ? (this.tileSize = customparams.tilesize)
+            : (this.tileSize = this.tileSize);
         this.container.nativeElement.appendChild(this.canvas);
     }
 
@@ -69,7 +85,6 @@ export class CharacterVisualizerComponent implements OnInit {
                     }`;
 
                     const img = new Image();
-
                     img.src = url;
 
                     await new Promise((res) => {
@@ -87,6 +102,35 @@ export class CharacterVisualizerComponent implements OnInit {
 
         validLayers.forEach((layer) => {
             this.ctx.drawImage(layer, 0, 0);
+        });
+        // fix cors issue by converting to base64
+        this.composedImage.src = this.canvas.toDataURL("image/png");
+        this.sliceAndDice(this.composedImage);
+    }
+
+    sliceAndDice(image: HTMLImageElement) {
+        for (let x = 0; x < this.canvasHeight; x += this.tileSize) {
+            for (let y = 0; y < this.canvasWidth; y += this.tileSize) {
+                const tileCanvas = this.renderer.createElement("canvas");
+                tileCanvas.width = this.tileSize;
+                tileCanvas.height = this.tileSize;
+                const tileCtx = tileCanvas.getContext("2d");
+                tileCtx.drawImage(
+                    this.composedImage,
+                    x,
+                    y,
+                    this.tileSize,
+                    this.tileSize,
+                    0,
+                    0,
+                    this.tileSize,
+                    this.tileSize
+                );
+                this.tiles.push(tileCanvas.toDataURL("image/png"));
+            }
+        }
+        this.tiles.forEach((tile) => {
+            console.log(tile);
         });
     }
 
